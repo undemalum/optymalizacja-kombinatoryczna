@@ -24,6 +24,23 @@ def _():
                 graph[node].append(edge)
 
     graph
+    return (graph,)
+
+
+@app.cell
+def _(graph):
+    coloring = {}
+
+    for vertex in graph:
+        color = 0
+
+        neighbor_colors = {coloring[n] for n in graph[vertex] if n in coloring}
+        while color in neighbor_colors:
+            color += 1
+
+        coloring[vertex] = color
+
+    coloring
     return
 
 
