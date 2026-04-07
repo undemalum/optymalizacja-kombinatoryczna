@@ -1,4 +1,4 @@
-\# Projekt Optymalizacja Kombinatoryczna
+# Projekt Optymalizacja Kombinatoryczna
 
 
 
