@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.21.1"
+__generated_with = "0.22.4"
 app = marimo.App(width="medium")
 
 
@@ -22,17 +22,24 @@ def _():
 
 @app.cell
 def _(nodes, random):
-    print(nodes)
+    neighbors = {i: [] for i in range(nodes)}
 
-    neighbors = {}
     for node in range(nodes):
-        neighbors[node] = []
-        for _ in range(random.randint(0, nodes)):
-            neighbor = random.randint(0, nodes)
+        attempts = random.randint(0, nodes - 1)
+    
+        for _ in range(attempts):
+            neighbor = random.randint(0, nodes - 1)
 
-            if neighbor not in neighbors[node] and node not in neighbors.get(neighbor, []) and node != neighbor:
+            if node != neighbor and neighbor not in neighbors[node]:
                 neighbors[node].append(neighbor)
+                neighbors[neighbor].append(node)
                 print(node, neighbor)
+    return (neighbors,)
+
+
+@app.cell
+def _(neighbors):
+    neighbors
     return
 
 
