@@ -8,7 +8,7 @@ app = marimo.App(width="medium")
 def _():
     import marimo as mo
 
-    return
+    return (mo,)
 
 
 @app.cell
@@ -26,7 +26,7 @@ def _(nodes, random):
 
     for node in range(nodes):
         attempts = random.randint(0, nodes - 1)
-    
+
         for _ in range(attempts):
             neighbor = random.randint(0, nodes - 1)
 
@@ -40,6 +40,29 @@ def _(nodes, random):
 @app.cell
 def _(neighbors):
     neighbors
+    return
+
+
+@app.cell
+def _(mo):
+    save = mo.ui.run_button("neutral", label="Save instance")
+    save
+    return (save,)
+
+
+@app.cell
+def _(mo, neighbors, save):
+    mo.stop(not save.value)
+
+    with open("instance.txt", "w") as f:
+        for node_s, edges in neighbors.items():
+            for edge in edges:
+                f.write(f"{node_s} {edge}\n")
+    return
+
+
+@app.cell
+def _():
     return
 
 
