@@ -15,7 +15,7 @@ def _():
 def _():
     import random
 
-    nodes = random.randint(10, 100)
+    nodes = random.randint(400, 500)
     nodes
     return nodes, random
 

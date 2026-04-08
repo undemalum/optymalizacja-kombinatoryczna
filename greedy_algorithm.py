@@ -11,18 +11,23 @@ def _():
     return
 
 
-@app.cell
-def _():
+@app.function
+def read_graph(filename: str) -> dict[list[int]]:
     graph = {}
-    with open("instance.txt", "r") as f:
+    with open(filename, "r") as f:
         for line in f:
             node, edge = list(map(int, line.split()))
-
+    
             if not node in graph:
                 graph[node] = [edge]
             else:
                 graph[node].append(edge)
+    return graph
 
+
+@app.cell
+def _():
+    graph = read_graph("instance.txt")
     graph
     return (graph,)
 

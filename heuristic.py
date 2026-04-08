@@ -1,0 +1,20 @@
+import marimo
+
+__generated_with = "0.22.4"
+app = marimo.App(width="medium")
+
+
+@app.cell
+def _():
+    from greedy_algorithm import read_graph
+
+    return
+
+
+@app.cell
+def _():
+    return
+
+
+if __name__ == "__main__":
+    app.run()
