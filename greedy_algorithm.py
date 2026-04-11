@@ -17,7 +17,7 @@ def read_graph(filename: str) -> dict[list[int]]:
     with open(filename, "r") as f:
         for line in f:
             node, edge = list(map(int, line.split()))
-    
+
             if not node in graph:
                 graph[node] = [edge]
             else:
@@ -46,6 +46,13 @@ def _(graph):
         coloring[vertex] = color
 
     coloring
+    return (coloring,)
+
+
+@app.cell
+def _(coloring):
+    #max((value for key, value in coloring.items()))
+    len(set(coloring.values()))
     return
 
 
