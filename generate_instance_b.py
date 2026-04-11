@@ -14,7 +14,7 @@ def _():
 @app.cell
 def _(mo):
     graph_size = mo.ui.range_slider(
-        start=400, stop=500, step=2, value=[400, 500]
+        start=20, stop=500, step=1, value=[20, 500]
     )
     graph_size
     return (graph_size,)
@@ -36,26 +36,29 @@ def _(graph_size):
 
 
 @app.cell
-def _(nodes, random):
-    neighbors = {i: [] for i in range(nodes)}
+def _(random):
+    def generate_instance(nodes: int) -> dict[int, list[int]]:
+        neighbors = {i: [] for i in range(1, nodes + 1)}
+    
+        for node in range(1, nodes + 1):
+            attempts = random.randint(0, nodes - 1)
+    
+            for _ in range(attempts):
+                neighbor = random.randint(int(nodes / 4), nodes)
+    
+                if node != neighbor and neighbor not in neighbors[node]:
+                    neighbors[node].append(neighbor)
+                    neighbors[neighbor].append(node)
+                    print(node, neighbor)
+        return neighbors
 
-    for node in range(nodes):
-        attempts = random.randint(0, nodes - 1)
-
-        for _ in range(attempts):
-            neighbor = random.randint(0, nodes - 1)
-
-            if node != neighbor and neighbor not in neighbors[node]:
-                neighbors[node].append(neighbor)
-                neighbors[neighbor].append(node)
-                print(node, neighbor)
-    return (neighbors,)
+    return (generate_instance,)
 
 
 @app.cell
-def _(neighbors):
-    neighbors
-    return
+def _(generate_instance, nodes):
+    neighbors = generate_instance(nodes)
+    return (neighbors,)
 
 
 @app.cell
@@ -66,10 +69,23 @@ def _(mo):
 
 
 @app.cell
-def _(mo, neighbors, nodes, save):
+def _(mo):
+    filename = mo.ui.text()
+    filename
+    return (filename,)
+
+
+@app.cell
+def _(filename):
+    filename.value
+    return
+
+
+@app.cell
+def _(filename, mo, neighbors, nodes, save):
     mo.stop(not save.value)
 
-    with open("instance.txt", "w") as f:
+    with open(f"{filename.value}.txt", "w") as f:
         f.write(str(nodes))
         for node_s, edges in neighbors.items():
             for edge in edges:

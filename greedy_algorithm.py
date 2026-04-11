@@ -26,9 +26,32 @@ def read_graph(filename: str) -> dict[list[int]]:
     return graph
 
 
+@app.function
+def read_graph_no_duplicate(filename: str) -> dict[list[int]]:
+    graph = {}
+    with open(filename, "r") as f:
+        _ = f.readline()
+        for line in f:
+            node, edge = list(map(int, line.split()))
+
+            if not node in graph:
+                graph[node] = [edge]
+                if not edge in graph:
+                    graph[edge] = [node]
+                else:
+                    graph[edge].append(node)
+            else:
+                graph[node].append(edge)
+                if not edge in graph:
+                    graph[edge] = [node]
+                else:
+                    graph[edge].append(node)
+    return graph
+
+
 @app.cell
 def _():
-    graph = read_graph("instance.txt")
+    graph = read_graph_no_duplicate("instancja_100.txt")
     graph
     return (graph,)
 
@@ -38,7 +61,7 @@ def _(graph):
     coloring = {}
 
     for vertex in graph:
-        color = 0
+        color = 1
 
         neighbor_colors = {coloring[n] for n in graph[vertex] if n in coloring}
         while color in neighbor_colors:

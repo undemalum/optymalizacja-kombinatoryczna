@@ -19,8 +19,15 @@ def _():
 
 
 @app.cell
+def _():
+    import random
+
+    return (random,)
+
+
+@app.cell
 def _(read_graph):
-    graph = read_graph("instance.txt")
+    graph = read_graph("100.txt")
     return (graph,)
 
 
@@ -253,7 +260,7 @@ def _(GraphColoringHeuristic, graph):
     solver = GraphColoringHeuristic(graph, rng_seed=42)
     solution = solver.greedy_plus_ga(pop_size=80, generations=400, mutation_rate=0.04)
     print(f"Solution:\n{solution}")
-    print(f"Chromatic number: {solver.num_colors()}")
+    print(f"Chromatic number: {solver.num_colors(solution)}")
     return
 
 
