@@ -740,7 +740,10 @@ def _(Coloring, Graph, List, Optional, random):
             best_coloring = self.greedy_coloring()
             best_color_limit = self.num_colors(best_coloring)
 
+            print(f"Initial Greedy coloring used k={best_color_limit}")
+
             for color_limit in range(best_color_limit - 1, 0, -1):
+                print(f"Searching for feasible coloring with k={color_limit}...")
                 candidate = self.ga_find_feasible_k(
                     initial_coloring=best_coloring,
                     color_limit=color_limit,
@@ -750,10 +753,12 @@ def _(Coloring, Graph, List, Optional, random):
                     elite_count=2,
                 )
                 if candidate is None:
+                    print(f"Failed to find coloring for k={color_limit}. Stopping.")
                     break
 
                 best_coloring = candidate
                 best_color_limit = color_limit
+                print(f"Success! Found feasible coloring with k={color_limit}")
 
             return best_coloring
 

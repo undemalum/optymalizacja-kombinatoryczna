@@ -12,10 +12,25 @@ def _():
 
 
 @app.cell
-def _():
+def _(mo):
+    graph_size = mo.ui.range_slider(
+        start=400, stop=500, step=2, value=[400, 500]
+    )
+    graph_size
+    return (graph_size,)
+
+
+@app.cell
+def _(graph_size):
+    graph_size.value
+    return
+
+
+@app.cell
+def _(graph_size):
     import random
 
-    nodes = random.randint(400, 500)
+    nodes = random.randint(graph_size.value[0], graph_size.value[1])
     nodes
     return nodes, random
 
@@ -51,10 +66,11 @@ def _(mo):
 
 
 @app.cell
-def _(mo, neighbors, save):
+def _(mo, neighbors, nodes, save):
     mo.stop(not save.value)
 
     with open("instance.txt", "w") as f:
+        f.write(str(nodes))
         for node_s, edges in neighbors.items():
             for edge in edges:
                 f.write(f"{node_s} {edge}\n")

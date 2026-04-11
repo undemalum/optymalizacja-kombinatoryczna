@@ -15,6 +15,7 @@ def _():
 def read_graph(filename: str) -> dict[list[int]]:
     graph = {}
     with open(filename, "r") as f:
+        _ = f.readline()
         for line in f:
             node, edge = list(map(int, line.split()))
 
