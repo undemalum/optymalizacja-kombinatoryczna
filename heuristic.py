@@ -13,18 +13,18 @@ def _():
 
 @app.cell
 def _(read_graph):
-    graph = read_graph("instance.txt")
+    graph = read_graph("gc_1000.txt")
     return (graph,)
 
 
 @app.cell
-def _():
-    """import random
+def _(Coloring, Graph, List, Optional, Tuple, graph):
+    import random
 
     def greedy_coloring(graph):
         coloring = {}
 
-        for vertex in graph:
+        for vertex in sorted(graph):
             color = 0
 
             neighbor_colors = {coloring[n] for n in graph[vertex] if n in coloring}
@@ -214,20 +214,27 @@ def _():
         #graph = read_graph("instance.txt")
         solution = greedy_plus_ga(
             graph,
-            pop_size=80,
-            generations=400,
+            pop_size=10,
+            generations=50,
             mutation_rate=0.04,
             rng_seed=123,
         )
 
         print("Final conflicts:", conflict_count(graph, solution))
-        print("Final colors used:", num_colors(solution))"""
-    return
+        print("Final colors used:", num_colors(solution))
+    return (
+        conflict_count,
+        greedy_coloring,
+        greedy_plus_ga,
+        num_colors,
+        random,
+        solution,
+    )
 
 
 @app.cell
 def _():
-    import random
+    """import random
     from typing import List, Tuple, Dict, Optional, Set
 
     # Type aliases for clarity
@@ -260,7 +267,6 @@ def _():
 
 
     def clamp_to_k_colors(coloring: Coloring, color_limit: int) -> Coloring:
-        """Force every color into the range [0, color_limit - 1]."""
         clamped_coloring: Coloring = {}
         for vertex, color in coloring.items():
             if color < color_limit:
@@ -275,10 +281,6 @@ def _():
         fitness_values: List[float], 
         tournament_size: int = 3
     ) -> Coloring:
-        """
-        Tournament selection is less prone to premature convergence 
-        than Roulette Wheel selection.
-        """
         best_idx = -1
         best_fitness = -1.0
 
@@ -292,11 +294,6 @@ def _():
 
 
     def crossover_gpx(parent_a: Coloring, parent_b: Coloring, color_limit: int) -> Coloring:
-        """
-        Greedy Partition Crossover (GPX).
-        Breeds independent sets (color classes) rather than raw integers,
-        solving the permutation/symmetry problem.
-        """
         child: Coloring = {}
         uncolored = set(parent_a.keys())
 
@@ -332,10 +329,6 @@ def _():
 
 
     def local_search(graph: Graph, coloring: Coloring, color_limit: int, max_steps: int = 50) -> None:
-        """
-        A 1-opt Hill Climber using Delta Evaluation.
-        Instead of checking the whole graph, it only counts conflicts for the moving vertex.
-        """
         vertices = list(graph.keys())
 
         for _ in range(max_steps):
@@ -377,7 +370,6 @@ def _():
 
 
     def mutate_coloring(coloring: Coloring, color_limit: int, mutation_probability: float) -> None:
-        """Simple random mutation. The heavy lifting is now done by Local Search."""
         for vertex in list(coloring.keys()):
             if random.random() < mutation_probability:
                 coloring[vertex] = random.randrange(color_limit)
@@ -483,19 +475,8 @@ def _():
             best_color_limit = color_limit
             print(f"Success! Found feasible coloring with k={color_limit}")
 
-        return best_coloring
-
-    return (
-        Coloring,
-        Graph,
-        List,
-        Optional,
-        conflict_count,
-        greedy_coloring,
-        greedy_plus_ga,
-        num_colors,
-        random,
-    )
+        return best_coloring"""
+    return
 
 
 @app.cell
@@ -510,8 +491,8 @@ def _(conflict_count, graph, greedy_plus_ga, num_colors):
         # 2. Call the main runner function
         best_solution = greedy_plus_ga(
             graph=graph,
-            pop_size=60,           # Size of the GA population
-            generations=200,       # Number of iterations per k-color search
+            pop_size=20,           # Size of the GA population
+            generations=100,       # Number of iterations per k-color search
             mutation_rate=0.05,    # Probability of random color mutations
             rng_seed=42            # Seed for reproducibility
         )
@@ -762,14 +743,14 @@ def _(Coloring, Graph, List, Optional, random):
 
             return best_coloring
 
-    return (GraphColoringHeuristic,)
+    return
 
 
 @app.cell
-def _(GraphColoringHeuristic, graph):
-    solver = GraphColoringHeuristic(graph, rng_seed=42)
-    solution = solver.greedy_plus_ga(pop_size=80, generations=400, mutation_rate=0.04)
-    return (solution,)
+def _():
+    """solver = GraphColoringHeuristic(graph, rng_seed=42)
+    solution = solver.greedy_plus_ga(pop_size=80, generations=400, mutation_rate=0.04)"""
+    return
 
 
 if __name__ == "__main__":

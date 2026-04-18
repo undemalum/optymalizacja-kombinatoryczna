@@ -139,54 +139,69 @@ def _(Coloring, Graph, List, Optional, random):
             return child
 
         def local_search(
-            self, coloring: Coloring, color_limit: int, max_evals: int = 50
-        ) -> None:
-            conflict_nodes = [
-                u
-                for u in self.graph
-                if any(coloring[u] == coloring[v] for v in self.graph[u])
-            ]
+                self, coloring: Coloring, color_limit: int, max_evals: int = 50
+            ) -> None:
+            
+                # Sweep to find nodes currently in conflict
+                conflict_nodes = [
+                    u
+                    for u in self.graph
+                    if any(coloring[u] == coloring[v] for v in self.graph[u])
+                ]
 
-            if not conflict_nodes:
-                return
+                if not conflict_nodes:
+                    return
 
-            self.rng.shuffle(conflict_nodes)
-            evals = 0
+                self.rng.shuffle(conflict_nodes)
+                evals = 0
+            
+                # Pre-allocate the colors list ONCE
+                base_colors = list(range(color_limit))
 
-            for u in conflict_nodes:
-                if evals >= max_evals:
-                    break
+                for u in conflict_nodes:
+                    if evals >= max_evals:
+                        break
+                    
 
-                current_color = coloring[u]
-                current_conflicts = sum(
-                    1 for v in self.graph[u] if coloring[v] == current_color
-                )
+                    current_color = coloring[u]
+                
+                    # Fast counting (avoids generator overhead)
+                    current_conflicts = 0
+                    for v in self.graph[u]:
+                        if coloring[v] == current_color:
+                            current_conflicts += 1
 
-                best_color = current_color
-                min_conflicts = current_conflicts
+                    best_color = current_color
+                    min_conflicts = current_conflicts
 
-                colors = list(range(color_limit))
-                self.rng.shuffle(colors)
+                    # Shuffle the pre-allocated list in-place
+                    self.rng.shuffle(base_colors)
 
-                for c in colors:
-                    if c == current_color:
-                        continue
+                    for c in base_colors:
+                        if c == current_color:
+                            continue
 
-                    new_conflicts = sum(
-                        1 for v in self.graph[u] if coloring[v] == c
-                    )
+                        new_conflicts = 0
+                        for v in self.graph[u]:
+                            if coloring[v] == c:
+                                new_conflicts += 1
+                                # EARLY EXIT: If this color is already worse, stop checking
+                                if new_conflicts >= min_conflicts:
+                                    break
 
-                    if new_conflicts < min_conflicts:
-                        min_conflicts = new_conflicts
-                        best_color = c
+                        # If we found a strictly better color, update our tracking
+                        if new_conflicts < min_conflicts:
+                            min_conflicts = new_conflicts
+                            best_color = c
 
-                        if min_conflicts == 0:
-                            break
+                            # If we found a perfect color, no need to check other colors
+                            if min_conflicts == 0:
+                                break
 
-                if best_color != current_color:
-                    coloring[u] = best_color
+                    if best_color != current_color:
+                        coloring[u] = best_color
 
-                evals += 1
+                    evals += 1
 
         def mutate_coloring(
             self, coloring: Coloring, color_limit: int, mutation_probability: float
@@ -256,8 +271,10 @@ def _(Coloring, Graph, List, Optional, random):
                         child_b, color_limit, mutation_probability
                     )
 
-                    self.local_search(child_a, color_limit, max_evals=10)
-                    self.local_search(child_b, color_limit, max_evals=10)
+                    if random.random() < 0.25:
+                        self.local_search(child_a, color_limit, max_evals=20)
+                    if random.random() < 0.25:
+                        self.local_search(child_b, color_limit, max_evals=20)
 
                     next_population.append(child_a)
                     if len(next_population) < population_size:
@@ -307,10 +324,15 @@ def _(Coloring, Graph, List, Optional, random):
 def _(GraphColoringHeuristic, graph):
     solver = GraphColoringHeuristic(graph, rng_seed=42)
     solution = solver.greedy_plus_ga(
-        pop_size=80, generations=400, mutation_rate=0.04
+        pop_size=20, generations=100, mutation_rate=0.04
     )
     print(f"Solution:\n{solution}")
     print(f"Chromatic number: {solver.num_colors(solution)}")
+    return
+
+
+@app.cell
+def _():
     return
 
 
