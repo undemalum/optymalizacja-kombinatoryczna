@@ -3,7 +3,6 @@
 # dependencies = ["marimo"]
 # ///
 
-
 import marimo
 
 __generated_with = "0.22.4"
@@ -264,9 +263,14 @@ def _(Coloring, Graph, List, Optional, random):
 @app.cell
 def _(GraphColoringHeuristic, graph):
     solver = GraphColoringHeuristic(graph, rng_seed=22)
-    solution = solver.greedy_plus_ga(pop_size=80, generations=400, mutation_rate=0.04)
+    solution = solver.greedy_plus_ga(pop_size=10, generations=21, mutation_rate=0.04)
     print(f"Solution:\n{solution}")
     print(f"Chromatic number: {solver.num_colors(solution)}")
+    return
+
+
+@app.cell
+def _():
     return
 
 
