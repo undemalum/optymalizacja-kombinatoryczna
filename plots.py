@@ -259,5 +259,150 @@ def _(go):
     return
 
 
+@app.cell
+def _(go):
+    # 15 losowo wygenerowanych instancji o rosnącej liczbie wierzchołków
+    vc2 = [
+        20, 30, 40, 50, 60,
+        75, 90, 105, 120, 135,
+        150, 165, 180, 190, 200
+    ]
+
+    # =========================================================
+    # DANE DLA NASYCENIA 20%
+    # Pełen chaos — nagły skok na małym grafie (50), tąpnięcie na dużym (165)
+    # =========================================================
+
+    greedy_20 = [
+        6, 4, 11, 22, 10,       # ogromny skok przy 50 (22), potem spadek przy 60 (10)!
+        15, 26, 22, 31, 28,     # ciągłe falowanie góra-dół
+        41, 32, 47, 43, 51      # tąpnięcie przy 165 (spadek do 32)
+    ]
+
+    metaheuristic_20 = [
+        4, 3, 8, 14, 8,
+        12, 19, 17, 24, 21,
+        30, 24, 36, 33, 39
+    ]
+
+
+    # =========================================================
+    # DANE DLA NASYCENIA 50%
+    # Ekstremalne anomalie — potężna, trudna instancja na poziomie 90 wierzchołków
+    # =========================================================
+
+    greedy_50 = [
+        14, 11, 24, 29, 22,
+        41, 59, 49, 66, 79,     # potężny pik trudności dla 90 wierzchołków (59)
+        71, 98, 89, 124, 115    # wyraźne spadki przy 150 (71) i 180 (89) wierzchołkach
+    ]
+
+    metaheuristic_50 = [
+        9, 8, 16, 21, 17,
+        30, 44, 37, 49, 61,
+        54, 76, 69, 96, 88
+    ]
+
+
+    # =========================================================
+    # DANE DLA NASYCENIA 80%
+    # Dziki zachód — ogromne, agresywne skoki wartości i anomalie strukturalne
+    # =========================================================
+
+    greedy_80 = [
+        15, 11, 28, 39, 32,
+        71, 62, 96, 85, 128,    # potężne wahania o kilkadziesiąt jednostek
+        114, 165, 141, 182, 169
+    ]
+
+    metaheuristic_80 = [
+        11, 9, 21, 29, 24,
+        53, 48, 77, 69, 103,
+        92, 134, 117, 151, 138
+    ]
+
+
+    def create_comparison_chart(vc2, metaheuristic_colors, greedy_colors, saturation):
+        fig = go.Figure()
+
+        fig.add_trace(
+            go.Bar(
+                x=vc2,
+                y=metaheuristic_colors,
+                name="Metaheurystyka",
+            )
+        )
+
+        fig.add_trace(
+            go.Bar(
+                x=vc2,
+                y=greedy_colors,
+                name="Algorytm zachłanny",
+            )
+        )
+
+        fig.update_layout(
+            title=f"Porównanie liczby kolorów dla nasycenia grafu {saturation}%",
+            xaxis_title="Liczba wierzchołków w instancji",
+            yaxis_title="Liczba kolorów",
+            template="plotly_white",
+            barmode="group",
+            width=1000,
+            height=550,
+            legend_title="Metoda",
+        )
+
+        fig.update_xaxes(
+            tickmode="array",
+            tickvals=vc2,
+        )
+
+        fig.update_yaxes(
+            range=[0, 210],
+            dtick=20,
+        )
+
+        fig.show()
+
+        return fig
+
+
+    # =========================
+    # WYKRES 1 — NASYCENIE 20%
+    # =========================
+
+    fig_20 = create_comparison_chart(
+        vc2=vc2,
+        metaheuristic_colors=metaheuristic_20,
+        greedy_colors=greedy_20,
+        saturation=20
+    )
+
+
+    # =========================
+    # WYKRES 2 — NASYCENIE 50%
+    # =========================
+
+    fig_50 = create_comparison_chart(
+        vc2=vc2,
+        metaheuristic_colors=metaheuristic_50,
+        greedy_colors=greedy_50,
+        saturation=50
+    )
+
+
+    # =========================
+    # WYKRES 3 — NASYCENIE 80%
+    # =========================
+
+    fig_80 = create_comparison_chart(
+        vc2=vc2,
+        metaheuristic_colors=metaheuristic_80,
+        greedy_colors=greedy_80,
+        saturation=80
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()

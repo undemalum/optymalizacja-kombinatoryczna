@@ -262,15 +262,131 @@ def _(Coloring, Graph, List, Optional, random):
 
 @app.cell
 def _(GraphColoringHeuristic, graph):
-    solver = GraphColoringHeuristic(graph, rng_seed=22)
-    solution = solver.greedy_plus_ga(pop_size=10, generations=21, mutation_rate=0.04)
+    solver = GraphColoringHeuristic(graph, rng_seed=32)
+    solution = solver.greedy_plus_ga(pop_size=20, generations=100, mutation_rate=0.04)
     print(f"Solution:\n{solution}")
     print(f"Chromatic number: {solver.num_colors(solution)}")
     return
 
 
 @app.cell
-def _():
+def _(random):
+    from collections import Counter
+    from typing import Dict, Set, Tuple
+
+    def greedy_init(graph: Dict[int, Set[int]]) -> Dict[int, int]:
+        coloring: Dict[int, int] = {}
+        for v in sorted(graph):
+            used = {coloring[n] for n in graph[v] if n in coloring}
+            c = 1
+            while c in used:
+                c += 1
+            coloring[v] = c
+        return coloring
+
+    def conflict_count(graph: Dict[int, Set[int]], coloring: Dict[int, int]) -> int:
+        seen = set()
+        conflicts = 0
+        for u, neigh in graph.items():
+            for v in neigh:
+                if (v, u) in seen:
+                    continue
+                seen.add((u, v))
+                if coloring.get(u) == coloring.get(v):
+                    conflicts += 1
+        return conflicts
+
+    def tabu_search(
+        graph: Dict[int, Set[int]],
+        max_iters: int = 1000,
+        tabu_tenure: int = 7,
+        init_method: str = "greedy",
+        seed: int | None = None,
+    ) -> Dict[int, int]:
+        if seed is not None:
+            random.seed(seed)
+
+        # init
+        if init_method == "random":
+            current = {v: random.randint(1, max(1, len(graph))) for v in graph}
+        else:
+            current = greedy_init(graph)
+
+        best = dict(current)
+        current_conflicts = conflict_count(graph, current)
+        best_conflicts = current_conflicts
+        best_colors = len(set(best.values()))
+        tabu: Dict[Tuple[int, int], int] = {}
+
+        for it in range(1, max_iters + 1):
+            max_color = max(current.values())
+            # build candidate moves: (vertex, target_color)
+            best_move = None
+            best_move_key = None
+
+            for v in graph:
+                old_color = current[v]
+                old_conflicts_v = sum(1 for n in graph[v] if current.get(n) == old_color)
+                for new_color in range(1, max_color + 1):
+                    if new_color == old_color:
+                        continue
+                    new_conflicts_v = sum(1 for n in graph[v] if current.get(n) == new_color)
+                    delta = new_conflicts_v - old_conflicts_v
+                    new_total_conflicts = current_conflicts + delta
+
+                    occurrences_old = sum(1 for col in current.values() if col == old_color)
+                    would_reduce = occurrences_old == 1 and new_color != old_color
+                    candidate_key = (v, new_color)
+                    is_tabu = tabu.get(candidate_key, 0) > it
+
+                    # aspiration: allow tabu if it improves best known (colors first, then conflicts)
+                    candidate_colors = len(set((current[v] if k != v else new_color) for k in current))
+                    aspiration = False
+                    if is_tabu:
+                        if candidate_colors < best_colors:
+                            aspiration = True
+                        elif candidate_colors == best_colors and new_total_conflicts < best_conflicts:
+                            aspiration = True
+
+                    if is_tabu and not aspiration:
+                        continue
+
+                    # objective: prefer moves that reduce color count, then reduce conflicts
+                    key = (0 if would_reduce else 1, new_total_conflicts, random.random())
+                    if best_move is None or key < best_move_key:
+                        best_move = (v, new_color, old_color, delta, would_reduce)
+                        best_move_key = key
+
+            if best_move is None:
+                break  # no move available
+
+            v, new_color, old_color, delta, would_reduce = best_move
+            # apply move
+            current[v] = new_color
+            current_conflicts += delta
+            tabu[(v, old_color)] = it + tabu_tenure
+
+            # update best
+            current_colors = len(set(current.values()))
+            if current_colors < best_colors or (current_colors == best_colors and current_conflicts < best_conflicts):
+                best = dict(current)
+                best_colors = current_colors
+                best_conflicts = current_conflicts
+
+            # quick exit if perfect 1-color (rare)
+            if best_conflicts == 0 and best_colors == 1:
+                break
+
+        return best
+
+    return conflict_count, tabu_search
+
+
+@app.cell
+def _(conflict_count, graph, read_graph, tabu_search):
+    graph2 = read_graph("gc500.txt", undirected=True)
+    best_col = tabu_search(graph2, max_iters=200, tabu_tenure=10, init_method="greedy", seed=42)
+    print("colors:", len(set(best_col.values())), "conflicts:", conflict_count(graph, best_col))
     return
 
 
