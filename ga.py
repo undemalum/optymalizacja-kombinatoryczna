@@ -46,7 +46,7 @@ def welsh_powell(graf):
         kolory[wierzcholek] = kolor
     return kolory
 
-def tabu_search_kolorowanie(graf, poczatkowe_kolory, max_iter, tabu_dlugosc, max_czas):
+def ga_kolorowanie(graf, poczatkowe_kolory, max_iter, ga_dlugosc, max_czas):
     najlepsze_poprawne = poczatkowe_kolory.copy()
     obecne_k = max(najlepsze_poprawne.values())
     czas_start = time.perf_counter()
@@ -73,7 +73,7 @@ def tabu_search_kolorowanie(graf, poczatkowe_kolory, max_iter, tabu_dlugosc, max
             obecne_kolory[w] = random.randint(1, docelowe_k)
 
         cc = buduj_conflict_count(obecne_kolory)
-        lista_tabu = {}
+        lista_ga = {}
         iteracja = 0
         znaleziono_poprawne = False
         iteracje_bez_poprawy = 0
@@ -95,7 +95,7 @@ def tabu_search_kolorowanie(graf, poczatkowe_kolory, max_iter, tabu_dlugosc, max
                     w = random.choice(konfliktowe)
                     obecne_kolory[w] = random.randint(1, docelowe_k)
                 cc = buduj_conflict_count(obecne_kolory)
-                lista_tabu.clear()
+                lista_ga.clear()
                 iteracje_bez_poprawy = 0
                 continue
 
@@ -112,14 +112,14 @@ def tabu_search_kolorowanie(graf, poczatkowe_kolory, max_iter, tabu_dlugosc, max
                     if nowy_kolor == stary_kolor:
                         continue
 
-                    tabu_key = (w, nowy_kolor)
-                    is_tabu = (tabu_key in lista_tabu and lista_tabu[tabu_key] > iteracja)
+                    ga_key = (w, nowy_kolor)
+                    is_ga = (ga_key in lista_ga and lista_ga[ga_key] > iteracja)
 
                     konflikty_po = sum(1 for v in graf[w] if obecne_kolory[v] == nowy_kolor)
                     delta = konflikty_po - konflikty_w_przed
 
                     total_po = sum(1 for x in cc if x > 0) + delta
-                    if is_tabu and total_po >= 0:
+                    if is_ga and total_po >= 0:
                         continue
 
                     if delta < najlepsze_delta:
@@ -141,8 +141,8 @@ def tabu_search_kolorowanie(graf, poczatkowe_kolory, max_iter, tabu_dlugosc, max
 
             obecne_kolory[w] = nowy_kolor
 
-            faktyczna_dlugosc = tabu_dlugosc + random.randint(-tabu_dlugosc // 10, tabu_dlugosc // 10)
-            lista_tabu[(w, stary_kolor)] = iteracja + max(1, faktyczna_dlugosc)
+            faktyczna_dlugosc = ga_dlugosc + random.randint(-ga_dlugosc // 10, ga_dlugosc // 10)
+            lista_ga[(w, stary_kolor)] = iteracja + max(1, faktyczna_dlugosc)
 
             nowe_konflikty = sum(1 for x in cc if x > 0)
             if nowe_konflikty < ostatnie_konflikty:
@@ -171,7 +171,7 @@ if __name__ == "__main__":
         "le450_5a.txt"
     ]
 
-    TABU_DLUGOSC = 30
+    GA_DLUGOSC = 30
     LIMIT_CZASOWY = 180
 
     print(f"{'Instancja':<15} {'GA':<10} {'Czas (s)':<10}")
@@ -187,16 +187,16 @@ if __name__ == "__main__":
         wynik_zachlanny = welsh_powell(graf)
         kolory_startowe = max(wynik_zachlanny.values())
 
-        # FAZA 2: Tabu Search
-        start_tabu = time.perf_counter()
-        wynik_koncowy = tabu_search_kolorowanie(
+        # FAZA 2: GA (Genetic Algorithm)
+        start_ga = time.perf_counter()
+        wynik_koncowy = ga_kolorowanie(
             graf,
             wynik_zachlanny,
             max_iter=7500,
-            tabu_dlugosc=TABU_DLUGOSC,
+            ga_dlugosc=GA_DLUGOSC,
             max_czas=LIMIT_CZASOWY
         )
-        czas_wykonania = time.perf_counter() - start_tabu
+        czas_wykonania = time.perf_counter() - start_ga
         kolory_koncowe = max(wynik_koncowy.values())
 
         print(f"{plik:<15} {kolory_koncowe:<10} {czas_wykonania:<10.2f}")
