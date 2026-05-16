@@ -374,7 +374,7 @@ def _(Coloring, Graph, List, Optional, random):
 def _(GraphColoringHeuristic, graph):
     solver = GraphColoringHeuristic(graph, rng_seed=42)
     solution = solver.greedy_plus_ga(
-        pop_size=30, generations=200, mutation_rate=0.04
+        pop_size=100, generations=400, mutation_rate=0.04
     )
     print(f"Solution:\n{solution}")
     print(f"Chromatic number: {solver.num_colors(solution)}")
