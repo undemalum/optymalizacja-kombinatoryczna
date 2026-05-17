@@ -31,9 +31,23 @@ def _():
 
 
 @app.cell
+def _():
+    from ga import wczytaj_dowolny_graf, greedy, ga_kolorowanie
+
+    return ga_kolorowanie, greedy, wczytaj_dowolny_graf
+
+
+@app.cell
 def _(read_graph):
-    graph = read_graph("gc_1000.txt")
+    graph = read_graph("gc1000.txt")
     return (graph,)
+
+
+@app.cell
+def _():
+    import time
+
+    return (time,)
 
 
 @app.cell
@@ -387,6 +401,42 @@ def _(conflict_count, graph, read_graph, tabu_search):
     graph2 = read_graph("gc500.txt", undirected=True)
     best_col = tabu_search(graph2, max_iters=200, tabu_tenure=10, init_method="greedy", seed=42)
     print("colors:", len(set(best_col.values())), "conflicts:", conflict_count(graph, best_col))
+    return
+
+
+@app.cell
+def _(ga_kolorowanie, greedy, time, wczytaj_dowolny_graf):
+    instancje = [
+        "queen6.txt",
+        "miles250.txt",
+        "gc500.txt",
+        "gc1000.txt",
+        "le450_5a.txt"
+    ]
+
+    GA_DLUGOSC = 30
+    LIMIT_CZASOWY = 180
+
+    print(f"Instancja GA Czas (s)")
+
+    for plik in instancje:
+        graf = wczytaj_dowolny_graf(plik)
+
+        wynik_zachlanny = greedy(graf)
+        kolory_startowe = max(wynik_zachlanny.values())
+
+        start_ga = time.perf_counter()
+        wynik_koncowy = ga_kolorowanie(
+            graf,
+            wynik_zachlanny,
+            max_iter=7500,
+            ga_dlugosc=GA_DLUGOSC,
+            max_czas=LIMIT_CZASOWY
+        )
+        czas_wykonania = time.perf_counter() - start_ga
+        kolory_koncowe = max(wynik_koncowy.values())
+
+        print(f"{plik} {kolory_koncowe} {czas_wykonania}")
     return
 
 

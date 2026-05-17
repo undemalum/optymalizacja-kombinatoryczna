@@ -36,7 +36,7 @@ def wczytaj_dowolny_graf(nazwa_pliku):
     return graf
 
 
-def welsh_powell(graf):
+def greedy(graf):
     kolory = {}
     for wierzcholek in range(len(graf)):
         zajete_kolory = {kolory[sasiad] for sasiad in graf[wierzcholek] if sasiad in kolory}
@@ -184,7 +184,7 @@ if __name__ == "__main__":
             continue
 
         # FAZA 1: Zachłanny
-        wynik_zachlanny = welsh_powell(graf)
+        wynik_zachlanny = greedy(graf)
         kolory_startowe = max(wynik_zachlanny.values())
 
         # FAZA 2: GA (Genetic Algorithm)
