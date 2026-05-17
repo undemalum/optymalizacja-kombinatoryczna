@@ -61,7 +61,9 @@ def _(Coloring, Graph, List, Optional, random):
             coloring: Coloring = {}
             for vertex in sorted(self.graph):
                 color = 0
-                neighbor_colors = {coloring[n] for n in self.graph[vertex] if n in coloring}
+                neighbor_colors = {
+                    coloring[n] for n in self.graph[vertex] if n in coloring
+                }
                 while color in neighbor_colors:
                     color += 1
                 coloring[vertex] = color
@@ -79,7 +81,9 @@ def _(Coloring, Graph, List, Optional, random):
         def num_colors(self, coloring: Coloring) -> int:
             return len(set(coloring.values()))
 
-        def clamp_to_k_colors(self, coloring: Coloring, color_limit: int) -> Coloring:
+        def clamp_to_k_colors(
+            self, coloring: Coloring, color_limit: int
+        ) -> Coloring:
             clamped_coloring: Coloring = {}
             for vertex, color in coloring.items():
                 if color < color_limit:
@@ -105,7 +109,9 @@ def _(Coloring, Graph, List, Optional, random):
 
             return population[best_idx]
 
-        def crossover_gpx(self, parent_a: Coloring, parent_b: Coloring, color_limit: int) -> Coloring:
+        def crossover_gpx(
+            self, parent_a: Coloring, parent_b: Coloring, color_limit: int
+        ) -> Coloring:
             child: Coloring = {}
             uncolored = set(parent_a.keys())
 
@@ -120,10 +126,18 @@ def _(Coloring, Graph, List, Optional, random):
             turn_a = True
             for k in range(color_limit):
                 if turn_a:
-                    best_c = max(classes_a.keys(), key=lambda c: len(classes_a[c] & uncolored), default=0)
+                    best_c = max(
+                        classes_a.keys(),
+                        key=lambda c: len(classes_a[c] & uncolored),
+                        default=0,
+                    )
                     chosen_set = classes_a[best_c] & uncolored
                 else:
-                    best_c = max(classes_b.keys(), key=lambda c: len(classes_b[c] & uncolored), default=0)
+                    best_c = max(
+                        classes_b.keys(),
+                        key=lambda c: len(classes_b[c] & uncolored),
+                        default=0,
+                    )
                     chosen_set = classes_b[best_c] & uncolored
 
                 for v in chosen_set:
@@ -137,7 +151,9 @@ def _(Coloring, Graph, List, Optional, random):
 
             return child
 
-        def local_search(self, coloring: Coloring, color_limit: int, max_steps: int = 50) -> None:
+        def local_search(
+            self, coloring: Coloring, color_limit: int, max_steps: int = 50
+        ) -> None:
             vertices = list(self.graph.keys())
 
             for _ in range(max_steps):
@@ -146,7 +162,9 @@ def _(Coloring, Graph, List, Optional, random):
 
                 for u in vertices:
                     current_color = coloring[u]
-                    current_conflicts = sum(1 for v in self.graph[u] if coloring[v] == current_color)
+                    current_conflicts = sum(
+                        1 for v in self.graph[u] if coloring[v] == current_color
+                    )
 
                     if current_conflicts == 0:
                         continue
@@ -160,7 +178,9 @@ def _(Coloring, Graph, List, Optional, random):
                     for c in colors:
                         if c == current_color:
                             continue
-                        new_conflicts = sum(1 for v in self.graph[u] if coloring[v] == c)
+                        new_conflicts = sum(
+                            1 for v in self.graph[u] if coloring[v] == c
+                        )
                         if new_conflicts < min_conflicts:
                             min_conflicts = new_conflicts
                             best_color = c
@@ -172,7 +192,9 @@ def _(Coloring, Graph, List, Optional, random):
                 if not improved:
                     break
 
-        def mutate_coloring(self, coloring: Coloring, color_limit: int, mutation_probability: float) -> None:
+        def mutate_coloring(
+            self, coloring: Coloring, color_limit: int, mutation_probability: float
+        ) -> None:
             for vertex in list(coloring.keys()):
                 if self.rng.random() < mutation_probability:
                     coloring[vertex] = self.rng.randrange(color_limit)
@@ -193,7 +215,9 @@ def _(Coloring, Graph, List, Optional, random):
 
             for _ in range(population_size - 1):
                 candidate = dict(seeded_coloring)
-                self.mutate_coloring(candidate, color_limit, mutation_probability=0.15)
+                self.mutate_coloring(
+                    candidate, color_limit, mutation_probability=0.15
+                )
                 self.local_search(candidate, color_limit)
                 population.append(candidate)
 
@@ -217,7 +241,10 @@ def _(Coloring, Graph, List, Optional, random):
                     reverse=True,
                 )
 
-                next_population = [dict(ranked_population[index][0]) for index in range(elite_count)]
+                next_population = [
+                    dict(ranked_population[index][0])
+                    for index in range(elite_count)
+                ]
 
                 while len(next_population) < population_size:
                     parent_a = self.tournament_select(population, fitness_values)
@@ -226,8 +253,12 @@ def _(Coloring, Graph, List, Optional, random):
                     child_a = self.crossover_gpx(parent_a, parent_b, color_limit)
                     child_b = self.crossover_gpx(parent_b, parent_a, color_limit)
 
-                    self.mutate_coloring(child_a, color_limit, mutation_probability)
-                    self.mutate_coloring(child_b, color_limit, mutation_probability)
+                    self.mutate_coloring(
+                        child_a, color_limit, mutation_probability
+                    )
+                    self.mutate_coloring(
+                        child_b, color_limit, mutation_probability
+                    )
 
                     self.local_search(child_a, color_limit, max_steps=10)
                     self.local_search(child_b, color_limit, max_steps=10)
@@ -262,7 +293,9 @@ def _(Coloring, Graph, List, Optional, random):
                     elite_count=2,
                 )
                 if candidate is None:
-                    print(f"Failed to find coloring for k={color_limit}. Stopping.")
+                    print(
+                        f"Failed to find coloring for k={color_limit}. Stopping."
+                    )
                     break
 
                 best_coloring = candidate
@@ -275,18 +308,46 @@ def _(Coloring, Graph, List, Optional, random):
 
 
 @app.cell
+def _():
+    print(f"Instancja GA Czas (s)")
+    return
+
+
+@app.cell
 def _(GraphColoringHeuristic, graph):
     solver = GraphColoringHeuristic(graph, rng_seed=32)
-    solution = solver.greedy_plus_ga(pop_size=20, generations=100, mutation_rate=0.04)
+    solution = solver.greedy_plus_ga(
+        pop_size=20, generations=100, mutation_rate=0.04
+    )
     print(f"Solution:\n{solution}")
     print(f"Chromatic number: {solver.num_colors(solution)}")
     return
 
 
 @app.cell
+def _(ga_kolorowanie, greedy, time, wczytaj_dowolny_graf):
+    def run(plik):
+        graf = wczytaj_dowolny_graf(plik)
+
+        wynik_zachlanny = greedy(graf)
+        kolory_startowe = max(wynik_zachlanny.values())
+
+        start_ga = time.perf_counter()
+        wynik_koncowy = ga_kolorowanie(
+            graf, wynik_zachlanny, max_iter=7500, ga_dlugosc=30, max_czas=180
+        )
+        czas_wykonania = time.perf_counter() - start_ga
+        kolory_koncowe = max(wynik_koncowy.values())
+        return czas_wykonania, kolory_koncowe
+
+    return (run,)
+
+
+@app.cell
 def _(random):
     from collections import Counter
     from typing import Dict, Set, Tuple
+
 
     def greedy_init(graph: Dict[int, Set[int]]) -> Dict[int, int]:
         coloring: Dict[int, int] = {}
@@ -298,7 +359,10 @@ def _(random):
             coloring[v] = c
         return coloring
 
-    def conflict_count(graph: Dict[int, Set[int]], coloring: Dict[int, int]) -> int:
+
+    def conflict_count(
+        graph: Dict[int, Set[int]], coloring: Dict[int, int]
+    ) -> int:
         seen = set()
         conflicts = 0
         for u, neigh in graph.items():
@@ -309,6 +373,7 @@ def _(random):
                 if coloring.get(u) == coloring.get(v):
                     conflicts += 1
         return conflicts
+
 
     def tabu_search(
         graph: Dict[int, Set[int]],
@@ -340,33 +405,48 @@ def _(random):
 
             for v in graph:
                 old_color = current[v]
-                old_conflicts_v = sum(1 for n in graph[v] if current.get(n) == old_color)
+                old_conflicts_v = sum(
+                    1 for n in graph[v] if current.get(n) == old_color
+                )
                 for new_color in range(1, max_color + 1):
                     if new_color == old_color:
                         continue
-                    new_conflicts_v = sum(1 for n in graph[v] if current.get(n) == new_color)
+                    new_conflicts_v = sum(
+                        1 for n in graph[v] if current.get(n) == new_color
+                    )
                     delta = new_conflicts_v - old_conflicts_v
                     new_total_conflicts = current_conflicts + delta
 
-                    occurrences_old = sum(1 for col in current.values() if col == old_color)
+                    occurrences_old = sum(
+                        1 for col in current.values() if col == old_color
+                    )
                     would_reduce = occurrences_old == 1 and new_color != old_color
                     candidate_key = (v, new_color)
                     is_tabu = tabu.get(candidate_key, 0) > it
 
                     # aspiration: allow tabu if it improves best known (colors first, then conflicts)
-                    candidate_colors = len(set((current[v] if k != v else new_color) for k in current))
+                    candidate_colors = len(
+                        set((current[v] if k != v else new_color) for k in current)
+                    )
                     aspiration = False
                     if is_tabu:
                         if candidate_colors < best_colors:
                             aspiration = True
-                        elif candidate_colors == best_colors and new_total_conflicts < best_conflicts:
+                        elif (
+                            candidate_colors == best_colors
+                            and new_total_conflicts < best_conflicts
+                        ):
                             aspiration = True
 
                     if is_tabu and not aspiration:
                         continue
 
                     # objective: prefer moves that reduce color count, then reduce conflicts
-                    key = (0 if would_reduce else 1, new_total_conflicts, random.random())
+                    key = (
+                        0 if would_reduce else 1,
+                        new_total_conflicts,
+                        random.random(),
+                    )
                     if best_move is None or key < best_move_key:
                         best_move = (v, new_color, old_color, delta, would_reduce)
                         best_move_key = key
@@ -382,7 +462,10 @@ def _(random):
 
             # update best
             current_colors = len(set(current.values()))
-            if current_colors < best_colors or (current_colors == best_colors and current_conflicts < best_conflicts):
+            if current_colors < best_colors or (
+                current_colors == best_colors
+                and current_conflicts < best_conflicts
+            ):
                 best = dict(current)
                 best_colors = current_colors
                 best_conflicts = current_conflicts
@@ -399,42 +482,31 @@ def _(random):
 @app.cell
 def _(conflict_count, graph, read_graph, tabu_search):
     graph2 = read_graph("gc500.txt", undirected=True)
-    best_col = tabu_search(graph2, max_iters=200, tabu_tenure=10, init_method="greedy", seed=42)
-    print("colors:", len(set(best_col.values())), "conflicts:", conflict_count(graph, best_col))
+    best_col = tabu_search(
+        graph2, max_iters=200, tabu_tenure=10, init_method="greedy", seed=42
+    )
+    print(
+        "colors:",
+        len(set(best_col.values())),
+        "conflicts:",
+        conflict_count(graph, best_col),
+    )
     return
 
 
 @app.cell
-def _(ga_kolorowanie, greedy, time, wczytaj_dowolny_graf):
+def _(run):
     instancje = [
         "queen6.txt",
         "miles250.txt",
         "gc500.txt",
         "gc1000.txt",
-        "le450_5a.txt"
+        "le450_5a.txt",
     ]
 
-    GA_DLUGOSC = 30
-    LIMIT_CZASOWY = 180
-
-    print(f"Instancja GA Czas (s)")
 
     for plik in instancje:
-        graf = wczytaj_dowolny_graf(plik)
-
-        wynik_zachlanny = greedy(graf)
-        kolory_startowe = max(wynik_zachlanny.values())
-
-        start_ga = time.perf_counter()
-        wynik_koncowy = ga_kolorowanie(
-            graf,
-            wynik_zachlanny,
-            max_iter=7500,
-            ga_dlugosc=GA_DLUGOSC,
-            max_czas=LIMIT_CZASOWY
-        )
-        czas_wykonania = time.perf_counter() - start_ga
-        kolory_koncowe = max(wynik_koncowy.values())
+        czas_wykonania, kolory_koncowe = run(plik)
 
         print(f"{plik} {kolory_koncowe} {czas_wykonania}")
     return
